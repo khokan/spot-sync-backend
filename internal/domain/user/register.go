@@ -1,9 +1,9 @@
 package user
 
 import (
-	"spotsync/intetnal/auth"
-	"spotsync/intetnal/config"
-	"spotsync/intetnal/middlewares"
+	"spotsync/internal/auth"
+	"spotsync/internal/config"
+	"spotsync/internal/middlewares"
 
 	"github.com/labstack/echo/v5"
 

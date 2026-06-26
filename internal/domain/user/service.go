@@ -2,8 +2,8 @@ package user
 
 import (
 	"fmt"
-	"spotsync/intetnal/auth"
-	"spotsync/intetnal/domain/user/dto"
+	"spotsync/internal/auth"
+	"spotsync/internal/domain/user/dto"
 )
 
 var ErrInvalidCredentials = fmt.Errorf("invalid email or password")

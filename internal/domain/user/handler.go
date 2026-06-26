@@ -3,8 +3,8 @@ package user
 import (
 	"errors"
 	"net/http"
-	"spotsync/intetnal/domain/httpresponse"
-	"spotsync/intetnal/domain/user/dto"
+	"spotsync/internal/domain/httpresponse"
+	"spotsync/internal/domain/user/dto"
 
 	"github.com/labstack/echo/v5"
 )

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"spotsync/intetnal/config"
-	"spotsync/intetnal/server"
+	"spotsync/internal/config"
+	"spotsync/internal/server"
 )
 
 func main() {

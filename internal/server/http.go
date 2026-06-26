@@ -3,8 +3,8 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"spotsync/intetnal/config"
-	"spotsync/intetnal/domain/user"
+	"spotsync/internal/config"
+	"spotsync/internal/domain/user"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
@@ -25,7 +25,6 @@ func (cv *CustomValidator) Validate(i any) error {
 }
 
 func Start(db *gorm.DB, cfg *config.Config) {
-	db.AutoMigrate(&user.User{})
 
 	e := echo.New()
 	e.Validator = &CustomValidator{validator: validator.New()}

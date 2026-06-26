@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"net/http"
-	"spotsync/intetnal/auth"
+	"spotsync/internal/auth"
 	"strings"
 
 	"github.com/labstack/echo/v5"
