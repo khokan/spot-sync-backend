@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"spotsync/internal/config"
 	"spotsync/internal/domain/user"
+	"spotsync/internal/domain/zone"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
@@ -25,6 +26,7 @@ func (cv *CustomValidator) Validate(i any) error {
 }
 
 func Start(db *gorm.DB, cfg *config.Config) {
+	db.AutoMigrate(&user.User{}, &zone.ParkingZone{})
 
 	e := echo.New()
 	e.Validator = &CustomValidator{validator: validator.New()}
@@ -36,6 +38,7 @@ func Start(db *gorm.DB, cfg *config.Config) {
 
 	//routes
 	user.RegisterRoutes(e, db, cfg)
+	zone.RegisterRoutes(e, db, cfg)
 
 	port := fmt.Sprintf(":%s", cfg.Port)
 	if err := e.Start(port); err != nil {
