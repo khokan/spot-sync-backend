@@ -6,7 +6,8 @@ type UserResponse struct {
 	Email     string `json:"email"  `
 	Role      string `json:"role"`
 	Token     string `json:"token,omitempty"`
-	CreatedAt string `json:"created_at"`
+	CreatedAt string `json:"created_at,omitempty"`
+	UpdatedAt string `json:"updated_at,omitempty"`
 }
 
 type LoginResponse struct {

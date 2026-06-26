@@ -83,7 +83,7 @@ func (h *handler) ListZones(c *echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, httpresponse.ErrorEnvelope{Success: false, Message: "failed to list zones", Errors: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, httpresponse.SuccessEnvelope{Success: true, Message: "zones fetched successfully", Data: resp})
+	return c.JSON(http.StatusOK, httpresponse.SuccessEnvelope{Success: true, Message: "Parking zones retrieved successfully", Data: resp})
 }
 
 func (h *handler) GetZone(c *echo.Context) error {

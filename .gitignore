@@ -1,0 +1,6 @@
+.env
+tmp/
+bin/
+main.exe
+tmp_build_test.exe
+cmd/__debug_bin.exe

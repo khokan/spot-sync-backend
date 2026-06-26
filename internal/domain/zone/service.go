@@ -102,6 +102,5 @@ func mapZone(zone *ZoneWithAvailability) *dto.ZoneResponse {
 		PricePerHour:   zone.PricePerHour,
 		AvailableSpots: zone.AvailableSpots,
 		CreatedAt:      zone.CreatedAt,
-		UpdatedAt:      zone.UpdatedAt,
 	}
 }

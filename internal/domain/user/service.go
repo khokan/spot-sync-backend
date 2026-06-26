@@ -47,6 +47,7 @@ func (s *service) CreateUser(req dto.CreateRequest) (*dto.UserResponse, error) {
 		Email:     user.Email,
 		Role:      user.Role,
 		CreatedAt: user.CreatedAt.String(),
+		UpdatedAt: user.UpdatedAt.String(),
 	}
 
 	return &response, nil
@@ -85,10 +86,9 @@ func (s *service) LoginUser(req dto.LoginRequest) (*dto.LoginResponse, error) {
 
 func (s *service) toUserResponse(user *User) dto.UserResponse {
 	return dto.UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		Role:      user.Role,
-		CreatedAt: user.CreatedAt.String(),
+		ID:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
+		Role:  user.Role,
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"spotsync/internal/config"
+	"spotsync/internal/domain/reservation"
 	"spotsync/internal/domain/user"
 	"spotsync/internal/domain/zone"
 
@@ -26,7 +27,7 @@ func (cv *CustomValidator) Validate(i any) error {
 }
 
 func Start(db *gorm.DB, cfg *config.Config) {
-	db.AutoMigrate(&user.User{}, &zone.ParkingZone{})
+	db.AutoMigrate(&user.User{}, &zone.ParkingZone{}, &reservation.Reservation{})
 
 	e := echo.New()
 	e.Validator = &CustomValidator{validator: validator.New()}
@@ -39,6 +40,7 @@ func Start(db *gorm.DB, cfg *config.Config) {
 	//routes
 	user.RegisterRoutes(e, db, cfg)
 	zone.RegisterRoutes(e, db, cfg)
+	reservation.RegisterRoutes(e, db, cfg)
 
 	port := fmt.Sprintf(":%s", cfg.Port)
 	if err := e.Start(port); err != nil {
