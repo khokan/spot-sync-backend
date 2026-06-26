@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"spotsync/intetnal/config"
+	"spotsync/intetnal/domain/user"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
@@ -24,7 +25,7 @@ func (cv *CustomValidator) Validate(i any) error {
 }
 
 func Start(db *gorm.DB, cfg *config.Config) {
-	// db.AutoMigrate(&user.User{}, &event.Event{}, &booking.Booking{})
+	db.AutoMigrate(&user.User{})
 
 	e := echo.New()
 	e.Validator = &CustomValidator{validator: validator.New()}
@@ -33,6 +34,9 @@ func Start(db *gorm.DB, cfg *config.Config) {
 	e.GET("/health", func(c *echo.Context) error {
 		return c.String(http.StatusOK, "spot-sync running")
 	})
+
+	//routes
+	user.RegisterRoutes(e, db, cfg)
 
 	port := fmt.Sprintf(":%s", cfg.Port)
 	if err := e.Start(port); err != nil {
