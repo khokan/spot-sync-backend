@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	ErrReservationNotFound = errors.New("reservation not found")
-	ErrZoneFull            = errors.New("zone is full")
+	ErrReservationNotFound   = errors.New("reservation not found")
+	ErrZoneFull              = errors.New("zone is full")
 	ErrDuplicateLicensePlate = errors.New("duplicate active reservation for license plate in this zone")
 )
 
@@ -137,7 +137,7 @@ func (r *repository) ListByUser(userID uint) ([]ReservationProjection, error) {
 		`).
 		Joins("JOIN parking_zones z ON z.id = r.zone_id").
 		Where("r.user_id = ?", userID).
-		Order("r.created_at DESC").
+		Order("r.created_at").
 		Scan(&rows).Error
 	if err != nil {
 		return nil, err

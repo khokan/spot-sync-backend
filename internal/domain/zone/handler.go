@@ -100,7 +100,7 @@ func (h *handler) GetZone(c *echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, httpresponse.ErrorEnvelope{Success: false, Message: "failed to get zone", Errors: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, httpresponse.SuccessEnvelope{Success: true, Message: "zone fetched successfully", Data: resp})
+	return c.JSON(http.StatusOK, httpresponse.SuccessEnvelope{Success: true, Message: "Parking zone fetched successfully", Data: resp})
 }
 
 func parseID(value string) (uint, error) {
