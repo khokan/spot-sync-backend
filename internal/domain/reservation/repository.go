@@ -163,7 +163,7 @@ func (r *repository) ListAll() ([]ReservationProjection, error) {
 		`).
 		Joins("JOIN users u ON u.id = r.user_id").
 		Joins("JOIN parking_zones z ON z.id = r.zone_id").
-		Order("r.created_at DESC").
+		Order("r.created_at").
 		Scan(&rows).Error
 	if err != nil {
 		return nil, err
