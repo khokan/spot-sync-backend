@@ -10,8 +10,7 @@ Smart parking and EV spot reservation backend built for the B6A6 assignment.
 
 ## 🌍 Live URL
 
-- Live API: Add your deployed URL here
-- Local API: http://localhost:8080
+- Live API: https://spot-sync-kk.onrender.com
 
 ## ✨ Core Features
 

@@ -34,7 +34,11 @@ func Start(db *gorm.DB, cfg *config.Config) {
 	e.Use(middleware.RequestLogger())
 
 	e.GET("/health", func(c *echo.Context) error {
-		return c.String(http.StatusOK, "spot-sync running")
+		return c.String(http.StatusOK, "spot-sync is healthy 🚀")
+	})
+
+	e.GET("/", func(c *echo.Context) error {
+		return c.String(http.StatusOK, "Spot Sync API is running 🚀")
 	})
 
 	//routes
