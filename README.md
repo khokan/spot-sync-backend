@@ -1,172 +1,191 @@
-# SpotSync Backend
+# 🚗 SpotSync Backend API
 
-SpotSync Backend is a Go-based REST API for managing parking zones and vehicle reservations with role-based authorization.
+Smart parking and EV spot reservation backend built for the B6A6 assignment.
 
-## Live URL
+![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go&logoColor=white)
+![Echo](https://img.shields.io/badge/Echo-v5-222222)
+![GORM](https://img.shields.io/badge/GORM-ORM-336791)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)
+![JWT](https://img.shields.io/badge/Auth-JWT-black)
 
-- Live API URL: Not deployed yet (add your production/staging URL here)
-- Local API URL: `http://localhost:8080`
+## 🌍 Live URL
 
-## Features
+- Live API: Add your deployed URL here
+- Local API: http://localhost:8080
 
-- JWT-based authentication (`register`, `login`, `me`)
-- Role-based access control (`admin`, `driver`)
-- Parking zone management (admin CRUD + public read)
-- Reservation lifecycle (create, list own, cancel, admin list all)
-- Input validation using request DTOs and validator rules
-- Layered architecture (handler, service, repository, entity/dto)
+## ✨ Core Features
 
-## Tech Stack
+- 🔐 JWT authentication with register, login, and current-user profile endpoints
+- 🛡️ Role-based authorization for admin and driver permissions
+- 🅿️ Parking zone management (public read, admin write)
+- ⚡ Concurrency-safe reservation creation for limited-capacity zones
+- 📦 Clean layered architecture with explicit DTO, handler, service, repository separation
+- ✅ Request validation and consistent success/error response patterns
 
-- Language: Go `1.25.4`
-- HTTP framework: Echo v5
-- ORM: GORM
-- Database: PostgreSQL
-- Auth: JWT (`github.com/golang-jwt/jwt/v5`)
-- Validation: `go-playground/validator/v10`
-- Config loading: `joho/godotenv`
+## 🛠️ Tech Stack
 
-## Architecture
+- Language: Go (module version in this project: 1.25.4)
+- HTTP Framework: Echo v5
+- ORM: GORM + PostgreSQL driver
+- Database: PostgreSQL (local or hosted, e.g., Neon/Supabase)
+- Auth: github.com/golang-jwt/jwt/v5
+- Validation: github.com/go-playground/validator/v10
+- Config: github.com/joho/godotenv
 
-This project follows a layered architecture to keep transport logic, business rules, and data access separate.
+## 🏛️ Architecture (Layer Interaction)
 
-### Layer Interaction
+The project follows strict separation of concerns:
 
-1. **Route/Register Layer** wires dependencies and route groups.
-2. **Handler Layer** accepts HTTP requests, binds/validates payload, and returns responses.
-3. **Service Layer** contains business rules and orchestration.
-4. **Repository Layer** performs DB operations through GORM.
-5. **Entity/DTO Layer** defines persistence models and request/response contracts.
+1. DTO layer defines request and response contracts.
+2. Handler layer handles HTTP, binding, validation, and response shaping.
+3. Service layer holds business logic and permission-sensitive decisions.
+4. Repository layer contains all database operations, transactions, and locks.
+5. Models/entities represent database tables.
 
 ```mermaid
-flowchart TD
+flowchart LR
 	A[Client] --> B[Echo Router]
-	B --> C[Middleware<br/>Auth + Role]
+	B --> C[Middleware: Auth + Role]
 	C --> D[Handler]
 	D --> E[Service]
 	E --> F[Repository]
 	F --> G[(PostgreSQL)]
-
-	D --> H[DTO Validation]
-	E --> I[Business Rules]
 ```
 
-### Project Structure (Key Paths)
+### Key Structure
 
-```text
-cmd/main.go                     # Application entrypoint
-internal/server/http.go         # Echo server bootstrap + route registration
-internal/config/                # Env config + DB connection
-internal/auth/                  # JWT service
-internal/middlewares/           # Auth and role middleware
-internal/domain/user/           # User module (auth)
-internal/domain/zone/           # Zone module
-internal/domain/reservation/    # Reservation module
-```
+- cmd/main.go
+- internal/server/http.go
+- internal/config
+- internal/middlewares
+- internal/domain/user
+- internal/domain/zone
+- internal/domain/reservation
 
-## Setup (Run Locally)
+## 🔒 Database Query Lock (Reservation Create)
 
-### 1. Prerequisites
+To prevent overbooking under concurrent requests, reservation creation uses:
 
-- Go 1.25+
-- PostgreSQL database
+- A single DB transaction
+- Row-level lock on the target parking zone using FOR UPDATE
+- Atomic capacity check and insert inside the same transaction
 
-### 2. Clone and install dependencies
+Implemented in CreateWithCapacityLock (reservation repository):
 
-```bash
-git clone <your-repo-url>
-cd spot-sync-backend
-go mod tidy
-```
+- Lock zone row first
+- Count active reservations in zone
+- Reject if active count >= total capacity
+- Reject duplicate active license plate inside the same zone
+- Create reservation only when all checks pass
 
-### 3. Configure environment variables
+This solves the race condition where two clients try to reserve the final available spot at the same time.
 
-Create/update `.env` in project root:
+## 🧪 Concurrency Testing (Create Reservation)
 
-```env
+### k6 Test Script
+
+- Script path: tmp/k6-reservations.js
+- Generates dynamic license plates within validation limit
+- Treats both 201 (created) and 409 (business conflict) as expected responses
+
+Example run:
+
+1. Set environment variables:
+   - TOKEN
+   - BASE_URL=http://127.0.0.1:8080
+   - ZONE_ID=4
+   - RATE=40
+   - DURATION=30s
+   - PRE_VUS=100
+   - MAX_VUS=300
+2. Run: k6 run ./tmp/k6-reservations.js
+
+### hey Load Test
+
+- Useful for quick stress checks
+- For PowerShell, use JSON body file with -D to avoid quoting issues
+- Prefer 127.0.0.1 over localhost to avoid IPv6 connection ambiguity
+
+## ⚙️ Local Setup
+
+### 1) Prerequisites
+
+- Go 1.22+
+- PostgreSQL
+
+### 2) Install dependencies
+
+- go mod tidy
+
+### 3) Configure .env
+
+Required variables:
+
+| Variable | Required | Default | Notes |
+|---|---|---|---|
+| DSN | Yes | - | PostgreSQL connection string |
+| PORT | No | 8080 | API listen port |
+| JWT_SECRET | Yes | - | JWT signing secret |
+| JWT_EXPIRY_HOURS | No | 24 | Must be > 0 |
+| BCRYPT_COST | No | 10 | Must be 10-12 |
+
+Example:
+
 DSN="postgresql://user:password@host:5432/dbname?sslmode=disable"
 PORT=8080
-BCRYPT_COST=10
 JWT_SECRET="secret_key"
 JWT_EXPIRY_HOURS=24
-```
+BCRYPT_COST=10
 
-### 4. Run the server
+### 4) Run server
 
-```bash
-go run ./cmd/main.go
-```
+- go run ./cmd/main.go
+- Optional hot reload: air
 
-Optional hot reload (if `air` is installed):
+### 5) Health check
 
-```bash
-air
-```
+- GET /health
+- Expected: spot-sync running
 
-### 5. Health check
+## 🌐 API Endpoint List
 
-```http
-GET /health
-```
+Base path: /api/v1
 
-Response:
+### 🔹 Auth Module
 
-```text
-spot-sync running
-```
+| Method | Endpoint | Access |
+|---|---|---|
+| POST | /auth/register | Public |
+| POST | /auth/login | Public |
+| GET | /auth/me | Authenticated |
 
-## Environment Variables
+### 🔹 Parking Zones Module
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `DSN` | Yes | - | PostgreSQL connection string |
-| `PORT` | No | `8080` | API server port |
-| `JWT_SECRET` | Yes | - | Secret key for signing JWT |
-| `JWT_EXPIRY_HOURS` | No | `24` | JWT expiry duration in hours |
-| `BCRYPT_COST` | No | `10` | Password hashing cost (`10` to `12`) |
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | /zones | Public |
+| GET | /zones/:id | Public |
+| POST | /zones | Admin |
+| PUT | /zones/:id | Admin |
+| DELETE | /zones/:id | Admin |
 
-## API Endpoints
+### 🔹 Reservations Module
 
-Base prefix: `/api/v1`
+| Method | Endpoint | Access |
+|---|---|---|
+| POST | /reservations | Authenticated (driver/admin) |
+| GET | /reservations/my-reservations | Authenticated |
+| DELETE | /reservations/:id | Authenticated |
+| GET | /reservations | Admin |
 
-### Auth (`/api/v1/auth`)
+## 🔐 Auth Header Format
 
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `POST` | `/auth/register` | Public | Register a new user |
-| `POST` | `/auth/login` | Public | Authenticate and receive JWT |
-| `GET` | `/auth/me` | Authenticated | Get current user profile |
-
-### Zones (`/api/v1/zones`)
-
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `GET` | `/zones` | Public | List all parking zones |
-| `GET` | `/zones/:id` | Public | Get zone details by ID |
-| `POST` | `/zones` | Admin | Create a parking zone |
-| `PUT` | `/zones/:id` | Admin | Update a parking zone |
-| `DELETE` | `/zones/:id` | Admin | Delete a parking zone |
-
-### Reservations (`/api/v1/reservations`)
-
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `POST` | `/reservations` | Authenticated | Create reservation |
-| `GET` | `/reservations/my-reservations` | Authenticated | List current user's reservations |
-| `DELETE` | `/reservations/:id` | Authenticated | Cancel reservation (owner/admin rules apply) |
-| `GET` | `/reservations` | Admin | List all reservations |
-
-## Authentication
-
-Send JWT in `Authorization` header:
-
-```http
 Authorization: Bearer <token>
-```
 
-## Notes
+## 📝 Notes
 
-- Auto migration runs on startup for `User`, `ParkingZone`, and `Reservation`.
-- Validation errors return HTTP `400`.
-- Protected endpoints return HTTP `401` for invalid/missing token and `403` for insufficient role.
+- Auto-migration runs on startup for users, parking_zones, and reservations.
+- Validation errors return 400.
+- Unauthorized access returns 401; insufficient role returns 403.
+- Reservation business conflicts (zone full, duplicate plate) return 409.
 

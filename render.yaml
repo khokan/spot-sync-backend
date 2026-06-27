@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: spot-sync-kk
+    runtime: go
+    plan: free
+    autoDeploy: true
+    buildCommand: go mod tidy && go build -tags netgo -ldflags "-s -w" -o app ./cmd/main.go
+    startCommand: ./app
+    envVars:
+      - key: DSN
+        sync: false
+      - key: PORT
+        value: "10000"
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRY_HOURS
+        value: "24"
+      - key: BCRYPT_COST
+        value: "10"
